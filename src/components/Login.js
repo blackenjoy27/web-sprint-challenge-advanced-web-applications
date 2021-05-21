@@ -5,7 +5,7 @@ import {axiosWithAuth} from "../helpers/axiosWithAuth";
 const initialUserInfo = {
     username:"",
     password:"",
-    // error:"Username or Password not valid."
+    error:""
 }
 
 const Login = () => {
@@ -26,17 +26,24 @@ const Login = () => {
   
   const login = e=>{
     e.preventDefault();
-    axiosWithAuth()
-      .post("/login", userInfo)
-      .then(res=>{
-        localStorage.setItem("token", res.data.payload);
-        push("/protected");
-        setUserInfo(initialUserInfo);
+    if (userInfo.username === "Lambda School" && userInfo.password === "i<3Lambd4") {
+      axiosWithAuth()
+        .post("/login", userInfo)
+        .then(res=>{
+          localStorage.setItem("token", res.data.payload);
+          push("/protected");
+          setUserInfo(initialUserInfo);
+        })
+        .catch(error=>{
+          console.log(error);
+        })
+    }
+    else{
+      setUserInfo({
+        ...userInfo,
+        error: "Username or Password incorrect. Please see Readme" 
       })
-      .catch(error=>{
-        console.log(error);
-      })
-    
+    }
   }
 
   const error = userInfo.error;
@@ -71,7 +78,7 @@ const Login = () => {
       </div>
       
 
-      {(userInfo.username.length===0 || userInfo.password.length===0) &&<p data-testid="errorMessage" className="error">{error}</p>}
+      {userInfo.error && <p data-testid="errorMessage" className="error">{error}</p>}
     </div>
   );
 };
