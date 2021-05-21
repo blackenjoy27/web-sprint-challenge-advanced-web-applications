@@ -1,15 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import {useHistory} from "react-router-dom";
+import {axiosWithAuth} from "../helpers/axiosWithAuth";
+
+const initialUserInfo = {
+    username:"",
+    password:"",
+    // error:"Username or Password not valid."
+}
 
 const Login = () => {
-  // make a post request to retrieve a token from the api
-  // when you have handled the token, navigate to the BubblePage route
+
+  const [userInfo, setUserInfo] = useState(initialUserInfo);
+  const {push} = useHistory();
 
   useEffect(()=>{
     // make a post request to retrieve a token from the api
     // when you have handled the token, navigate to the BubblePage route
   });
+  const updateForm = e=>{
+    setUserInfo({
+      ...userInfo,
+      [e.target.name]:e.target.value
+    })
+  }
   
-  const error = "";
+  const login = e=>{
+    e.preventDefault();
+    axiosWithAuth()
+      .post("/login", userInfo)
+      .then(res=>{
+        localStorage.setItem("token", res.data.payload);
+        push("/protected");
+        setUserInfo(initialUserInfo);
+      })
+      .catch(error=>{
+        console.log(error);
+      })
+    
+  }
+
+  const error = userInfo.error;
   //replace with error state
 
   return (
@@ -17,9 +47,31 @@ const Login = () => {
       <h1>Welcome to the Bubble App!</h1>
       <div data-testid="loginForm" className="login-form">
         <h2>Build login form here</h2>
+        <form onSubmit={login}>
+          <label>Username:
+              <input
+                type="text"
+                data-testid="username"
+                name="username"
+                value={userInfo.username}
+                onChange={updateForm}
+              />
+          </label>
+          <label>Password:
+              <input
+                type="text"
+                data-testid="password"
+                name="password"
+                value={userInfo.password}
+                onChange={updateForm}
+              />
+          </label>
+          <button>Login</button>
+        </form>
       </div>
+      
 
-      <p data-testid="errorMessage" className="error">{error}</p>
+      {(userInfo.username.length===0 || userInfo.password.length===0) &&<p data-testid="errorMessage" className="error">{error}</p>}
     </div>
   );
 };
